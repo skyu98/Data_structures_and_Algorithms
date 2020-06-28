@@ -47,7 +47,7 @@ public:
 笼统的讲，所有的递归代码都可以改写为迭代循环的非递归写法。如何做？抽象出递推公式、初始值和边界条件，然后用迭代循环实现。
 
 ## 五、经典题目
-### 目标和
+### 1.目标和
 给定一个非负整数数组，a1, a2, ..., an, 和一个目标数，S。现在你有两个符号 + 和 -。对于数组中的任意一个整数，你都可以从 + 或 -中选择一个符号添加在前面。
 
 返回可以使最终数组和为目标数 S 的所有添加符号的方法数。
@@ -105,4 +105,53 @@ public:
         return cnt;
     }
  };
+```
+### 2.二叉树的中序遍历
+给定一个二叉树，返回它的中序 遍历。
+
+示例:
+```
+输入: [1,null,2,3]
+   1
+    \
+     2
+    /
+   3
+
+输出: [1,3,2]
+```
+#### 思路：从根节点开始，处理左子树、记录根节点、处理右子树；边界条件为，如果节点为NULL，直接返回。
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    vector<int> res;
+    
+    void solve(TreeNode* r){
+        // 边界条件
+        if(r == NULL)
+        {
+            return;
+        }
+        // 解决左子树
+        solve(r->left);
+        // 记录根节点值（叶节点可以看做子节点为NULL的根节点）     
+        res.push_back(r->val);
+        // 处理右子树
+        solve(r->right);
+    }
+    
+    vector<int> inorderTraversal(TreeNode* root) {
+        solve(root);
+        return res;
+    }
+};
 ```
