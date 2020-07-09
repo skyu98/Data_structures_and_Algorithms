@@ -34,7 +34,7 @@
 ```cpp
 前序遍历的递推公式：
 preOrder(r) = print r->preOrder(r->left)->preOrder(r->right);
-
+// 递推方式
 class Solution{
 public:
     vector<int> res;
@@ -47,13 +47,41 @@ public:
         preOrder(root->right);
     }
 };
+
+// 迭代方式
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root){
+        vector<int> res;
+        if(root==NULL) return res;
+        
+        stack<TreeNode*> s;
+        s.push(root);
+        
+        while(!s.empty())
+        {
+            TreeNode* cur = s.top();
+            s.pop();
+            res.push_back(cur->val);
+            if(cur->right != NULL)
+            {
+                s.push(cur->right);
+            }
+            if(cur->left != NULL)
+            {
+                s.push(cur->left);
+            }
+        }
+        return res;
+    }        
+};
 ```
 ②中序遍历：
 * 对于树中的任意节点来说，先打印它的左子树，然后再打印它的本身，最后打印它的右子树。
 ```cpp
 中序遍历的递推公式：
 inOrder(r) = inOrder(r->left)->print(r)->inOrder(r->right);
-
+// 递推
 class Solution{
 public:
     vector<int> res;
@@ -66,13 +94,48 @@ public:
         inOrder(root->right);
     }
 };
+
+// 迭代
+class Solution {
+public:
+    vector<int> res;
+
+    vector<int> inorderTraversal(TreeNode* root) {
+        if(root == NULL)
+        {
+            return res;
+        }
+        stack<TreeNode*> s;
+        
+        while(root != NULL || !s.empty())
+        {   
+            // 将自己入栈，再将左子树循环入栈
+            while(root!= NULL)
+            {
+                s.push(root);
+                root = root->left;
+            }
+            
+            // 没有左子树后，处理节点
+            TreeNode* cur = s.top();
+            s.pop();
+            res.push_back(cur->val);
+            
+            // 将当前节点的右子树作为下一个节点；
+            // 1.右子树为NULL，下一次循环则会处理栈中上一个节点的父节点
+            // 2.右子树不为NULL，继续处理右子树
+            root = cur->right;
+        }
+        return res;
+    }
+};
 ```
 ③后序遍历：
 * 对于树中的任意节点来说，先打印它的左子树，然后再打印它的右子树，最后打印它本身。
 ```cpp
 后序遍历的递推公式：
 postOrder(r) = postOrder(r->left)->postOrder(r->right)->print r
-
+// 递推
 class Solution{
 public:
     vector<int> res;
@@ -83,6 +146,88 @@ public:
         postOrder(root->left);
         postOrder(root->right);
         res.push_back(root->val);
+    }
+};
+
+// 迭代1
+// 从递推公式可以看出，后序遍历的结果应该是前序遍历中，先右后左最后反向输出
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root){
+        vector<int> res;
+        if(root==NULL) return res;
+        
+        stack<TreeNode*> s;
+        s.push(root);
+        
+        while(!s.empty())
+        {
+            TreeNode* cur = s.top();
+            s.pop();
+            res.push_back(cur->val);
+            if(cur->left != NULL)
+            {
+                s.push(cur->left);
+            }
+            if(cur->right != NULL)
+            {
+                s.push(cur->right);
+            }
+        }
+        
+        vector<int> tmp = res;
+        int size = res.size();
+        for(int i =size-1;i>=0;i--)
+        {
+            tmp[size-1-i]=res[i];
+        }
+        return tmp;
+    }        
+};
+
+// 迭代2
+// 后序遍历中，将左子树循环入栈，遇到无左子树时，判断其有无右子树；
+// 无：说明是叶节点，取出并访问该节点，下一次循环判断其父节点，有无右子树；
+// 有：判断该右子树是否访问过；否：则将其右子树作为根节点，继续循环入栈
+//                          是：说明已经是回溯过程，直接取出该节点并访问。
+
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root){
+        vector<int> res;
+        if(root==NULL) return res;
+        
+        TreeNode* last = NULL;
+        stack<TreeNode*> s;
+        
+        while(root != NULL || !s.empty())
+        {
+            // 将左子树循环入栈
+            while(root!=NULL)
+            {
+                s.push(root);
+                root = root->left;
+            }
+            
+            // 检查最左侧的节点
+            // 1）如果无右孩子节点，说明无子节点，则访问节点；
+            // 2）如果是其右节点上次已经访问过，则访问节点。
+            TreeNode* cur = s.top();
+            if(cur->right == NULL || cur->right == last)
+            {
+                s.pop();
+                res.push_back(cur->val);
+                
+                last = cur;
+                
+                root = NULL;
+            }
+            else
+            {
+                root = cur->right;
+            }
+        }
+        return res;
     }
 };
 ```
