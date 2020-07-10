@@ -193,13 +193,39 @@ public:
     }
 };
 ```
+#### 2.思路：高度等于最大深度+1
+```cpp
+depth(Node->child) = depth(Node) + 1 
+```
+```cpp
+class Solution{
+public:
+    int res = 0;
+    void passDepth(TreeNode* r, int depth){
+        if(r == NULL) return;
+        // 如果是根节点，判断是否是最深的根节点
+        if(!r->left && !r->right)
+        {
+            res = max(res, depth);
+        }
+        // 继续传递
+        passDepth(r->left, depth+1);
+        passDeprh(r->right, depth+1);
+    }
 
-#### 2.思路：层次遍历整个树，每一层count++
+    int height(TreeNode* root){
+        if(root==NULL) return 0;
+        solve(root, 1); // 根节点深度为0
+        return res;
+    }
+};
+```
+#### 3.思路：层次遍历整个树，每一层count++
 ```cpp
 class Solution{
 public:
     int height(TreeNode* root){
-        if(tree == NULL) return 0;
+        if(root == NULL) return 0;
         
         int height = 0;
         queue<TreeNode*> q;
