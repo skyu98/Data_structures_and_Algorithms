@@ -16,6 +16,20 @@
  *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
  * };
  */
+// recursion
+class Solution {
+public:
+    TreeNode* searchBST(TreeNode* root, int val) {
+        if(!root ||root->val == val ) return root;
+        if(root->val > val) return searchBST(root->left, val);
+        if(root->val < val) return searchBST(root->right, val);
+        return nullptr;
+    }
+};
+```
+
+```cpp
+ // iteration
 class Solution{
 public:
     TreeNode* Find(TreeNode* root, int target){
@@ -53,6 +67,26 @@ public:
  *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
  * };
  */
+ // recursion
+class Solution {
+public:
+    TreeNode* insertIntoBST(TreeNode* root, int val) {
+        if(!root) return ( new TreeNode(val));
+
+        if(root->val < val) 
+        {
+            root->right = insertIntoBST(root->right, val);
+        }
+        else
+        {
+            root->left = insertIntoBST(root->left, val);
+        }
+        return root;
+    }
+};
+ ```
+ ```cpp
+ // iteration
 class Solution{
 public:
     // 假设插入的值不与已有的值重复
@@ -101,6 +135,8 @@ public:
 
 ![delete](./tree_delete.jpg "delete")
 
+## 迭代
+
 ```cpp
 /**
  * Definition for a binary tree node.
@@ -119,13 +155,13 @@ public:
         while(cur! = NULL && cur->val != target)
         {
             pre = cur;
-            if(tmp->val < target)
+            if(cur->val < target)
             {
-                tmp = tmp->right;
+                cur = cur->right;
             }
             else
             {
-                tmp = tmp->left;
+                cur = cur->left;
             }
         }
         if(cur == NULL) return -1;
@@ -150,9 +186,82 @@ public:
         if(cur->left != NULL) single_child = cur->left;
         else if(cur->right != NULL) single_child = cur->right;
 
-        if(pre == NULL) tree = single_child;
+        if(pre == NULL) root = single_child;
         else if(pre->left == cur) pre->left = single_child;
         else pre->right = single_child;
+        return 0;
+    }
+};
+```
+## 递归
+在这里，将找其右子树中的最小节点，抽象为找其中序遍历中的**后继节点**；
+```cpp
+int successor(TreeNode* root) {
+  root = root->right;
+  while (root->left != NULL) root = root->left;
+  return root->val;
+} 
+```
+**如果没有右子树，则其后继节点在其上方，为了避免回溯，则利用其前驱节点代替后继结点**
+将找其左子树中的最大节点，抽象为找其中序遍历中的**前驱节点**；
+```cpp
+int predecessor(TreeNode* root) {
+  root = root->left;
+  while (root->right != NULL) root = root->right;
+  return root->val;
+} 
+```
+```cpp
+class Solution {
+public:
+    int successor(TreeNode* root) {
+        root = root->right;
+        while (root->left != NULL) root = root->left;
+        return root->val;
+    }    
+    
+    int predecessor(TreeNode* root) {
+        root = root->left;
+        while (root->right != NULL) root = root->right;
+        return root->val;
+    }
+
+    TreeNode* deleteNode(TreeNode* root, int key) {
+        if(!root) return root;
+        
+        // delete from left subtree
+        if(key < root->val)
+        {
+            root->left = deleteNode(root->left, key);
+        }
+        // delete from right subtree
+        else if(key > root->val)
+        {
+            root->right = deleteNode(root->right, key);
+        }
+        // root is the target
+        else
+        {   
+            // if it's a leaf
+            if(!root->left && !root->right) root = NULL;
+            // it's not a leaf and has a right child
+            else if(root->right)
+            {   
+                // find it's successor and use it to replace
+                root->val = successor(root);
+                // delete the successor
+                root->right = deleteNode(root->right, root->val);
+            }
+            // it's not a leaf, has no right child, and has a left child
+            else if(root->left)
+            {
+                // find it's predecessor and use it to replace
+                root->val = predecessor(root);
+                // delete the predecessor
+                root->left = deleteNode(root->left, root->val)
+            } 
+        }
+        return root;    
     }
 };
 ```
