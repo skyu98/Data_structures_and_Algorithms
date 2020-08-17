@@ -54,4 +54,13 @@ public:
             idx = maxPos;
         }
     }
+
+    void sort(){
+        while(count > 1)
+        {
+            swap(tree, count, 1);
+            --count;
+            heapify(tree, count, 1);
+        }
+    }
 };
