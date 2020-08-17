@@ -66,6 +66,7 @@ int removeTop(){
     --count;
 
     heapify(tree, count, 1);
+    return 0;
 }
 
 void heapify(vector<int> tree, int count, int idx){
