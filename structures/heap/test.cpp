@@ -12,34 +12,29 @@ private:
 
     void swap(int p, int q){
         int tmp = tree[p];
-        // cout << tmp << ","<< p << endl;
         tree[p] = tree[q];
         tree[q] = tmp;
     }
 
 public:
     heap(int n) : capacity(n), count(0) {
-        vector<int> tree;
-        tree.push_back(-1);
+        tree = vector<int> (capacity+1, 0);
+        tree[0] = -1;       
     }
 
     int insert(int val){
         if(count >= capacity) return -1;
         ++count;
 
-        tree.push_back(val);
-        
         int idx = count;
-        
+        tree[idx] = val;
+
         while(idx / 2 > 0  && tree[idx] > tree[idx / 2])// 自下往上堆化
         {
+            // cout << idx <<"is" <<tree[idx] << endl;
+            // cout << idx / 2 << "is" << tree[idx / 2] << endl;
             swap(idx, idx / 2);
             idx /= 2;
-        }
-        
-        for(int i =0;i<tree.size();++i)
-        {
-            cout<< i << ","<< tree[i]<<endl;
         }
         return idx;
     }
@@ -50,6 +45,7 @@ public:
         --count;
 
         heapify(tree, count, 1);
+        return 0;
     }
 
     // 从上往下堆化
@@ -66,12 +62,14 @@ public:
     }
 
     void sort(){
+        int save = count;
         while(count > 1)
         {
             swap(count, 1);
             --count;
             heapify(tree, count, 1);
         }
+        count = save;
     }
 
     int get(int idx){
@@ -82,32 +80,36 @@ public:
 
 int main()
 {
-    int capacity = 2;
+    int size = 5;
 
-    heap h = heap(capacity);
+    heap h(size);
     h.insert(7);
     h.insert(8);
-    //h.insert(6);
-    //h.insert(3);
-    //h.insert(4);
+    h.insert(6);
+    h.insert(3);
+    h.insert(4);
 
-    for(int i=1;i<=capacity;++i)
+    for(int i=1;i<=size;++i)
+    {
+        cout << h.get(i)<< endl;
+    }
+	cout<<"remove the top num :"<< h.get(1)<<endl;
+    h.removeTop();
+
+    for(int i=1;i<=size-1;++i)
+    {
+        cout << h.get(i)<< endl;
+    }
+    
+	h.sort();
+
+    cout <<"after sort"<< endl;
+
+    for(int i=1;i<=size-1;++i)
     {
         cout << h.get(i)<< endl;
     }
 
-    // h.sort();
-
-    // cout <<"after sort"<< endl;
-
-    // for(int i=1;i<=capacity;++i)
-    // {
-    //     cout << h.get(i+1)<< endl;
-    // }
-
-    // h.removeTop();
-
-    // cout << h.get(1)<< endl;
     
     return 0;
 }
