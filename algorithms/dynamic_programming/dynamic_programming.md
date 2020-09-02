@@ -137,6 +137,10 @@ public:
     }
 };
 ```
+时间复杂度：$O(n*target)$。每种状态计算一次。
+空间复杂度：$O(n*target)$。储存每种状态。
+
+
 #### 2.动态规划
 这里状态dp[i][j]的含义为：对于前i(索引)个物品，能不能有某种选择，把容量为j的背包刚刚好装满。
 那么base case为：
@@ -182,93 +186,180 @@ public:
     }
 };
 ```
+时间复杂度：$O(n*target)$。每种状态计算一次。
+空间复杂度：$O(n*target)$。储存每种状态。
 
-### 10. Regular Expression Matching
-给你一个字符串 s 和一个字符规律 p，请你来实现一个支持 '.' 和 '*' 的正则表达式匹配。
+**这说明，带备忘录的回溯算法，其效率和动态规划相同。**
 
-'.' 匹配任意单个字符
-'*' 匹配零个或多个前面的那一个元素
 
-说明:
-
-s 可能为空，且只包含从 a-z 的小写字母。
-p 可能为空，且只包含从 a-z 的小写字母，以及字符 . 和 *。
+### 518.Coin Change 2(完全背包问题)
+给定不同面额的硬币和一个总金额。写出函数来计算可以凑成总金额的硬币组合数。假设每一种面额的硬币有无限个。 
 
 >示例 1:
-输入:
-s = "aa"
-p = "a"
-输出: false
-解释: "a" 无法匹配 "aa" 整个字符串。
+输入: amount = 5, coins = [1, 2, 5]
+输出: 4
+解释: 有四种方式可以凑成总金额:
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
 
 >示例 2:
-输入:
-s = "aa"
-p = "a*"
-输出: true
-解释: 因为 '*' 代表可以匹配零个或多个前面的那一个元素, 在这里前面的元素就是 'a'。因此，字符串 "aa" 可被视为 'a' 重复了一次。
+输入: amount = 3, coins = [2]
+输出: 0
+解释: 只用面额2的硬币不能凑成总金额3。
 
->示例 3:
-输入:
-s = "ab"
-p = ".\*"
-输出: true
-解释: ".*" 表示可匹配零个或多个（'*'）任意字符（'.'）。
+>示例 3:
+输入: amount = 10, coins = [10] 
+输出: 1
+ 
 
->示例 4:
-输入:
-s = "aab"
-p = "c\*a\*b"
-输出: true
-解释: 因为 '*' 表示零个或多个，这里 'c' 为 0 个, 'a' 被重复一次。因此可以匹配字符串 "aab"。
-
->示例 5:
-输入:
-s = "mississippi"
-p = "mis\*is\*p\*."
-输出: false
+>注意:你可以假设：
+0 <= amount (总金额) <= 5000
+1 <= coin (硬币面额) <= 5000
+硬币种类不超过 500 种
+结果符合 32 位符号整数
 
 #### 思路：
-解题思路
-* 1、如果p为空，s为空匹配，s非空不匹配；
-* 2、s非空，p == s || p == '.'时第一个字符匹配；
-* 3、(p+1) != ''，则递归判断剩下的是否匹配 first_match && isMatch(++s, ++p)
-* 4、(p+1) == '*'，则有两种情况匹配：
-    * a: *匹配0个字符，s匹配剩下的，即isMatch(s, p+2)
-    * b: *匹配1个字符，继续用p匹配剩下的s，即first_match && isMatch(s+1, p)
-
+完全背包问题和经典0-1背包问题的唯一区别是：完全背包每个物品是无限的，而不是只有一个。
+这里状态dp[i][j]的含义为：只用前i个硬币，对于amount = j，能刚好凑出amount的方式总数。
+那么base case为：
+```cpp
+dp[0][j % coins[0] == 0] = 1;
+dp[...][0] = 1;
+```
+状态转移方程为：
+```cpp
+if(j > coins[i]) dp[i][j] = dp[i-1][j] + dp[i][j-coins[i]];
+else dp[i][j] = dp[i-1][j];
+```
 ```cpp
 class Solution {
 public:
-    bool isMatch(string s, string p) {
-        return _match(s.data(), p.data());
-    }
+    int change(int amount, vector<int>& coins) {
+        if(amount == 0) return 1;
+        if(coins.size() == 0) return amount == 0;
+        if(coins[0] > amount) return 0;
+        
 
-    bool _match(char* s, char* p){
-        if(!*p) return !*s; // 这里注意，!p代表指针为空，!*p才代表*p == '\0'
-        bool first_match = *s && (*s == *p || *p == '.');
-        if(*(p+1) == '*')
+        vector<vector<int>> dp(coins.size(), vector<int>(amount + 1, 0));
+
+        // base case 
+        for(int i = 0;i<coins.size();++i)
         {
-            return _match(s, p+2) || (first_match && _match(s+1, p));
+            dp[i][0] = 1;
         }
-        else
+        for(int j = 0;j<=amount;++j)
         {
-            return first_match && _match(s+1, p+1);
+            if(j % coins[0] == 0)
+            dp[0][j] = 1;
         }
+        
+        for(int i=1;i<coins.size();++i)
+        {
+            for(int j=0;j <=amount;++j)
+            {
+                if(j >= coins[i]) dp[i][j] = dp[i-1][j] + dp[i][j-coins[i]];
+                else dp[i][j] = dp[i-1][j];
+            }
+        }
+
+        return dp[coins.size()-1][amount];
     }
 };
 ```
+时间复杂度：$O(N * amount)$；每个状态考虑一次，每次会考虑n种硬币；
+空间复杂度：$O(N * amount)$；需要一个数组来储存信息。
 
-## 主要解题框架
-``` python
-result = []
-def backtrack(路径, 选择列表):
-    if 满足结束条件:
-        result.add(路径)
-        return
-    
-    for 选择 in 选择列表:
-        做选择
-        backtrack(路径, 选择列表)
-        撤销选择
+### 72. Edit Distance
+给你两个单词 word1 和 word2，请你计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+你可以对一个单词进行如下三种操作：
+
+* 插入一个字符
+* 删除一个字符
+* 替换一个字符
+ 
+>示例 1：
+输入：word1 = "horse", word2 = "ros"
+输出：3
+解释：
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+
+>示例 2：
+输入：word1 = "intention", word2 = "execution"
+输出：5
+解释：
+intention -> inention (删除 't')
+inention -> enention (将 'i' 替换为 'e')
+enention -> exention (将 'n' 替换为 'x')
+exention -> exection (将 'n' 替换为 'c')
+exection -> execution (插入 'u')
+
+#### 思路：
+```cpp
+D[i][j-1] 为 A 的前 i 个字符和 B 的前 j - 1 个字符编辑距离的子问题。即对于 B 的第 j 个字符，我们在 A 的末尾添加了一个相同的字符，那么 D[i][j] 最小可以为 D[i][j-1] + 1；
+
+D[i-1][j] 为 A 的前 i - 1 个字符和 B 的前 j 个字符编辑距离的子问题。即对于 A 的第 i 个字符，我们在 B 的末尾添加了一个相同的字符，那么 D[i][j] 最小可以为 D[i-1][j] + 1；
+
+D[i-1][j-1] 为 A 前 i - 1 个字符和 B 的前 j - 1 个字符编辑距离的子问题。即对于 B 的第 j 个字符，我们修改 A 的第 i 个字符使它们相同，那么 D[i][j] 最小可以为 D[i-1][j-1] + 1。特别地，如果 A 的第 i 个字符和 B 的第 j 个字符原本就相同，那么我们实际上不需要进行修改操作。在这种情况下，D[i][j] 最小可以为 D[i-1][j-1]。
 ```
+```cpp
+那么我们可以写出如下的状态转移方程：
+if(word1[i] == word2[j]) dp[i][j] = dp[i - 1][j - 1];
+else
+{
+    dp[i][j] = min(1 + dp[i - 1][j - 1], 1 + dp[i - 1][j], 1 + dp[i][j - 1]);
+}
+​	
+具体代码如下：
+```cpp
+class Solution {
+public:
+    int _min(int a, int b, int c) {
+        return min(a, min(b, c));
+    }
+
+    int minDistance(string word1, string word2) {
+        if(word1 == word2) return 0;
+        if(word1 == "") return word2.size();
+        if(word2 == "") return word1.size();
+
+        int len_1 = word1.size(), len_2 = word2.size();
+
+        vector<vector<int>> dp(len_1, vector<int>(len_2)); 
+
+        for(int i = 0;i<len_1;++i)
+        {
+            if(word1[i] == word2[0]) dp[i][0] = i;
+            else if(i == 0) dp[i][0] = 1;
+            else dp[i][0] = dp[i - 1][0] + 1;
+        }
+        
+        for(int j = 0;j<len_2;++j)
+        {
+            if(word2[j] == word1[0]) dp[0][j] = j;
+            else if(j == 0) dp[0][j] = 1;
+            else dp[0][j] = dp[0][j - 1] + 1;
+        }
+        
+        for(int i = 1;i<len_1;++i)
+        {
+            for(int j = 1;j<len_2;++j)
+            {
+                if(word1[i] == word2[j]) dp[i][j] = dp[i - 1][j - 1];
+                else
+                {
+                    dp[i][j] = _min(1 + dp[i - 1][j - 1], 1 + dp[i - 1][j], 1 + dp[i][j - 1]);
+                }
+            }
+        }
+        return dp[len_1 - 1][len_2 - 1];
+    }
+};
+```
+时间复杂度 ：O(mn)，其中 m 为 word1 的长度，n 为 word2 的长度。
+
+空间复杂度 ：O(mn)，我们需要大小为O(mn)的数组来记录状态值。
